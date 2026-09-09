@@ -1,0 +1,18 @@
+{
+  "theme_color": "#F0657D",
+  "background_color": "#FFFDF9",
+  "display": "standalone",
+  "scope": "/",
+  "start_url": "/",
+  "name": "Mãe & Cuidado",
+  "short_name": "Mãe&Cuidado",
+  "description": "Acolhimento e praticidade na rotina da maternidade",
+  "icons": [
+    {
+      "src": "/logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
