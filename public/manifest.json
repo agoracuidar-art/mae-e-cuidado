@@ -1,18 +1,18 @@
 {
-  "theme_color": "#F0657D",
-  "background_color": "#FFFDF9",
-  "display": "standalone",
-  "scope": "/",
-  "start_url": "/",
   "name": "Mãe & Cuidado",
   "short_name": "Mãe&Cuidado",
-  "description": "Acolhimento e praticidade na rotina da maternidade",
+  "description": "App de rotina e organização para mães",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FDFBFB",
+  "theme_color": "#F0657D",
   "icons": [
     {
       "src": "/logo.png",
-      "sizes": "512x512",
+      "sizes": "192x192 512x512",
       "type": "image/png",
       "purpose": "any maskable"
     }
   ]
 }
+
