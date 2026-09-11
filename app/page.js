@@ -5,7 +5,7 @@ import {
   Heart, Calendar, Clock, DollarSign, ShoppingBag, 
   Baby, CheckCircle2, Plus, Trash2, Utensils, Moon, 
   Sun, Phone, ShieldAlert, Sparkles, Download, FileText, 
-  Smile, Coffee, Droplet, Sparkle
+  Smile, Coffee, Droplet, Milk, ChefHat
 } from 'lucide-react';
 
 export default function MaeECuidadoApp() {
@@ -50,19 +50,19 @@ export default function MaeECuidadoApp() {
 
   // --- 3. DADOS COM PERSISTÊNCIA (localStorage) ---
   const [mamadas, setMamadas] = useState([]);
+  const [mamadeiras, setMamadeiras] = useState([]);
   const [registrosSono, setRegistrosSono] = useState([]);
   const [fraldas, setFraldas] = useState([]);
   const [alimentosIA, setAlimentosIA] = useState([]);
   const [listaCompras, setListaCompras] = useState([]);
   const [financas, setFinancas] = useState([]);
-  const [desapegos, setDesapegos] = useState([]);
 
-  // Estados de Autocuidado
+  // Autocuidado
   const [coposAgua, setCoposAgua] = useState(0);
   const [humorHoje, setHumorHoje] = useState('');
   const [vitaminaTomada, setVitaminaTomada] = useState(false);
 
-  // Lista de Gotas de Afeto
+  // Gotas de Afeto
   const gotasDeAfeto = [
     "As fases vão passar e o amor vai ficar. Você está indo muito bem!",
     "Respire fundo. Cuidar de você também é cuidar do seu bebê.",
@@ -74,12 +74,11 @@ export default function MaeECuidadoApp() {
   ];
 
   const [indiceFrase, setIndiceFrase] = useState(0);
-
   const proximaFraseAfeto = () => {
     setIndiceFrase((prev) => (prev + 1) % gotasDeAfeto.length);
   };
 
-  // Carregar dados salvos ao abrir
+  // Carregar dados salvos
   useEffect(() => {
     const savedUser = localStorage.getItem('mc_userData');
     if (savedUser) {
@@ -91,40 +90,44 @@ export default function MaeECuidadoApp() {
       if (data) setter(JSON.parse(data));
     };
     load('mc_mamadas', setMamadas);
+    load('mc_mamadeiras', setMamadeiras);
     load('mc_sono', setRegistrosSono);
     load('mc_fraldas', setFraldas);
     load('mc_alimentos', setAlimentosIA);
     load('mc_compras', setListaCompras);
     load('mc_financas', setFinancas);
-    load('mc_desapegos', setDesapegos);
     load('mc_agua', setCoposAgua);
     load('mc_humor', setHumorHoje);
     load('mc_vitamina', setVitaminaTomada);
   }, []);
 
-  // Salvar dados quando houver alterações
+  // Salvar alterações
   useEffect(() => {
     if (onboardingDone) localStorage.setItem('mc_userData', JSON.stringify(userData));
   }, [userData, onboardingDone]);
 
   useEffect(() => { localStorage.setItem('mc_mamadas', JSON.stringify(mamadas)); }, [mamadas]);
+  useEffect(() => { localStorage.setItem('mc_mamadeiras', JSON.stringify(mamadeiras)); }, [mamadeiras]);
   useEffect(() => { localStorage.setItem('mc_sono', JSON.stringify(registrosSono)); }, [registrosSono]);
   useEffect(() => { localStorage.setItem('mc_fraldas', JSON.stringify(fraldas)); }, [fraldas]);
   useEffect(() => { localStorage.setItem('mc_alimentos', JSON.stringify(alimentosIA)); }, [alimentosIA]);
   useEffect(() => { localStorage.setItem('mc_compras', JSON.stringify(listaCompras)); }, [listaCompras]);
   useEffect(() => { localStorage.setItem('mc_financas', JSON.stringify(financas)); }, [financas]);
-  useEffect(() => { localStorage.setItem('mc_desapegos', JSON.stringify(desapegos)); }, [desapegos]);
   useEffect(() => { localStorage.setItem('mc_agua', JSON.stringify(coposAgua)); }, [coposAgua]);
   useEffect(() => { localStorage.setItem('mc_humor', JSON.stringify(humorHoje)); }, [humorHoje]);
   useEffect(() => { localStorage.setItem('mc_vitamina', JSON.stringify(vitaminaTomada)); }, [vitaminaTomada]);
 
-  // --- 4. CRONÔMETROS (Amamentação e Sono) ---
+  // --- 4. CRONÔMETROS ---
   const [sonoTimer, setSonoTimer] = useState(false);
   const [tempoSono, setTempoSono] = useState(0);
+  const [horaInicioSono, setHoraInicioSono] = useState(null);
 
   const [mamadaTimer, setMamadaTimer] = useState(false);
   const [ladoAtualMamada, setLadoAtualMamada] = useState(null);
   const [tempoMamada, setTempoMamada] = useState(0);
+
+  // Estado da Mamadeira
+  const [mlMamadeira, setMlMamadeira] = useState('');
 
   useEffect(() => {
     let interval = null;
@@ -148,7 +151,7 @@ export default function MaeECuidadoApp() {
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
-  // --- 5. LÓGICA DE NEGÓCIO ---
+  // --- 5. FUNÇÕES DE REGISTRO ---
   const ultimoLadoMamado = mamadas.length > 0 ? mamadas[0].lado : null;
   const proximoLadoSugerido = ultimoLadoMamado === 'Seio Esquerdo' ? 'Seio Direito' : 'Seio Esquerdo';
 
@@ -171,19 +174,38 @@ export default function MaeECuidadoApp() {
     }
   };
 
+  const addMamadeira = () => {
+    if (!mlMamadeira) return;
+    const novoRegistro = {
+      id: Date.now(),
+      quantidade: mlMamadeira,
+      hora: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    };
+    setMamadeiras([novoRegistro, ...mamadeiras]);
+    setMlMamadeira('');
+  };
+
   const toggleSono = () => {
-    if (sonoTimer) {
-      const agora = new Date();
+    const agoraHora = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    if (!sonoTimer) {
+      // Inicia a soneca e guarda a hora inicial
+      setHoraInicioSono(agoraHora);
+      setTempoSono(0);
+      setSonoTimer(true);
+    } else {
+      // Finaliza a soneca
       const novoRegistro = {
         id: Date.now(),
         duracao: formatTime(tempoSono),
-        data: agora.toLocaleDateString(),
-        horaFim: agora.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        data: new Date().toLocaleDateString(),
+        dormiuAs: horaInicioSono,
+        acordouAs: agoraHora
       };
       setRegistrosSono([novoRegistro, ...registrosSono]);
+      setSonoTimer(false);
       setTempoSono(0);
+      setHoraInicioSono(null);
     }
-    setSonoTimer(!sonoTimer);
   };
 
   const addFralda = (tipo) => {
@@ -203,7 +225,6 @@ export default function MaeECuidadoApp() {
   const [novoAlimento, setNovoAlimento] = useState({ nome: '', aceitacao: 'ótima' });
   const [novoItemCompra, setNovoItemCompra] = useState('');
   const [novaFinanca, setNovaFinanca] = useState({ desc: '', valor: '' });
-  const [novoDesapego, setNovoDesapego] = useState({ titulo: '', preco: '' });
 
   const handleCompleteOnboarding = (e) => {
     e.preventDefault();
@@ -265,7 +286,7 @@ export default function MaeECuidadoApp() {
             </div>
 
             <div className="pt-2 border-t border-slate-100 space-y-2">
-              <p className="font-semibold text-slate-700">Cartão de Emergência & Saúde:</p>
+              <p className="font-semibold text-slate-700">Cartão de Saúde & Emergência:</p>
               <div className="grid grid-cols-2 gap-2">
                 <input 
                   type="text" placeholder="Tipo Sanguíneo (Ex: O+)" value={userData.tipoSanguineo}
@@ -323,7 +344,6 @@ export default function MaeECuidadoApp() {
         </div>
 
         <div className="flex items-center gap-2">
-          {/* Botão Exportar PDF */}
           <button 
             onClick={exportarRelatorioPDF}
             className="p-2 rounded-full bg-pink-50 dark:bg-slate-700 text-[#F0657D] dark:text-pink-300 hover:opacity-80"
@@ -332,7 +352,6 @@ export default function MaeECuidadoApp() {
             <FileText className="w-4 h-4" />
           </button>
 
-          {/* Botão Tema Escuro */}
           <button 
             onClick={() => setDarkMode(!darkMode)}
             className="p-2 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-200 hover:opacity-80"
@@ -341,7 +360,6 @@ export default function MaeECuidadoApp() {
             {darkMode ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-slate-600" />}
           </button>
 
-          {/* Botão de Instalação PWA */}
           {isInstallable && (
             <button
               onClick={handleInstallClick}
@@ -355,52 +373,16 @@ export default function MaeECuidadoApp() {
       </header>
 
       <main className="p-4 max-w-lg mx-auto space-y-6">
-        {/* Banner de Emergência Rápida e Saúde */}
-        <div className={`p-3.5 rounded-2xl border flex flex-col gap-2 text-xs ${darkMode ? 'bg-slate-800 border-rose-900/50' : 'bg-rose-50/70 border-rose-100'}`}>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <ShieldAlert className="w-5 h-5 text-rose-500 shrink-0" />
-              <span className="font-bold text-rose-600 dark:text-rose-400 text-sm">Cartão de Saúde</span>
-            </div>
-            {userData.tipoSanguineo && (
-              <span className="bg-rose-500 text-white font-bold px-2 py-0.5 rounded-md text-[10px]">
-                Sangue: {userData.tipoSanguineo}
-              </span>
-            )}
-          </div>
-
-          <div className="text-[11px] space-y-0.5 opacity-90">
-            {userData.alergias && <p><span className="font-semibold text-rose-600 dark:text-rose-400">Alergias:</span> {userData.alergias}</p>}
-            {userData.convenio && <p><span className="font-semibold text-slate-700 dark:text-slate-300">Plano/SUS:</span> {userData.convenio}</p>}
-          </div>
-
-          <div className="flex gap-2 pt-1 border-t border-rose-100 dark:border-slate-700/50">
-            {userData.telefonePediatra && (
-              <a 
-                href={`tel:${userData.telefonePediatra}`} 
-                className="flex-1 bg-emerald-600 text-white py-1.5 rounded-xl flex items-center justify-center gap-1 font-bold text-xs"
-              >
-                <Phone className="w-3 h-3" /> Lig. Pediatra
-              </a>
-            )}
-            <a 
-              href="tel:192" 
-              className="flex-1 bg-rose-600 text-white py-1.5 rounded-xl flex items-center justify-center gap-1 font-bold text-xs"
-            >
-              Ligar 192 (SAMU)
-            </a>
-          </div>
-        </div>
 
         {/* --- ABA INÍCIO --- */}
         {activeTab === 'inicio' && (
           <div className="space-y-6">
-            {/* Amamentação com Cronômetro e Sugestão */}
+            {/* Amamentação com Cronômetro */}
             <div className={`rounded-2xl p-5 shadow-sm border ${cardClasses}`}>
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center space-x-2">
                   <Heart className="text-[#F0657D] w-5 h-5" />
-                  <h2 className="font-bold">Amamentação</h2>
+                  <h2 className="font-bold">Amamentação (Seio)</h2>
                 </div>
                 {ultimoLadoMamado && (
                   <span className="text-[10px] bg-pink-100 dark:bg-pink-900/40 text-[#F0657D] px-2.5 py-1 rounded-full font-semibold">
@@ -410,7 +392,7 @@ export default function MaeECuidadoApp() {
               </div>
 
               {mamadaTimer && (
-                <div className="text-center py-2 bg-pink-50 dark:bg-slate-700/50 rounded-xl mb-3 border border-pink-100 dark:border-slate-600">
+                <div className="text-center py-2 bg-[#FFF2F4] dark:bg-slate-700/50 rounded-xl mb-3 border border-pink-100 dark:border-slate-600">
                   <span className="text-2xl font-mono font-bold text-[#F0657D]">{formatTime(tempoMamada)}</span>
                   <p className="text-[10px] opacity-70">Mamando no {ladoAtualMamada}...</p>
                 </div>
@@ -421,8 +403,8 @@ export default function MaeECuidadoApp() {
                   onClick={() => iniciarMamada('Seio Esquerdo')} 
                   className={`py-3 rounded-xl font-semibold border transition text-xs flex flex-col items-center ${
                     ladoAtualMamada === 'Seio Esquerdo' && mamadaTimer 
-                      ? 'bg-rose-500 text-white border-rose-600 animate-pulse' 
-                      : 'bg-pink-50 dark:bg-slate-700 text-[#F0657D] dark:text-pink-300 border-pink-200 dark:border-slate-600'
+                      ? 'bg-[#F0657D] text-white border-pink-600 animate-pulse' 
+                      : 'bg-[#FFF2F4] dark:bg-slate-700 text-[#F0657D] dark:text-pink-300 border-pink-100 dark:border-slate-600'
                   }`}
                 >
                   <span>Seio Esquerdo</span>
@@ -435,8 +417,8 @@ export default function MaeECuidadoApp() {
                   onClick={() => iniciarMamada('Seio Direito')} 
                   className={`py-3 rounded-xl font-semibold border transition text-xs flex flex-col items-center ${
                     ladoAtualMamada === 'Seio Direito' && mamadaTimer 
-                      ? 'bg-rose-500 text-white border-rose-600 animate-pulse' 
-                      : 'bg-pink-50 dark:bg-slate-700 text-[#F0657D] dark:text-pink-300 border-pink-200 dark:border-slate-600'
+                      ? 'bg-[#F0657D] text-white border-pink-600 animate-pulse' 
+                      : 'bg-[#FFF2F4] dark:bg-slate-700 text-[#F0657D] dark:text-pink-300 border-pink-100 dark:border-slate-600'
                   }`}
                 >
                   <span>Seio Direito</span>
@@ -453,6 +435,42 @@ export default function MaeECuidadoApp() {
                     <div key={m.id} className="flex justify-between text-xs bg-slate-50 dark:bg-slate-700/40 p-2 rounded-lg">
                       <span className="font-medium">{m.lado}</span>
                       <span className="opacity-70">{m.duracao ? `${m.duracao} min` : ''} ({m.hora})</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Mamadeira em ml */}
+            <div className={`rounded-2xl p-5 shadow-sm border ${cardClasses}`}>
+              <div className="flex items-center space-x-2 mb-3">
+                <Milk className="text-purple-500 w-5 h-5" />
+                <h2 className="font-bold">Mamadeira / Leite Extraído</h2>
+              </div>
+
+              <div className="flex gap-2 mb-3 text-xs">
+                <input 
+                  type="number" 
+                  placeholder="Quantidade em ml (Ex: 120)" 
+                  value={mlMamadeira}
+                  onChange={(e) => setMlMamadeira(e.target.value)}
+                  className="flex-1 p-2.5 rounded-xl border border-purple-200 dark:bg-slate-700 dark:border-slate-600 focus:outline-none"
+                />
+                <button 
+                  onClick={addMamadeira}
+                  className="bg-purple-600 text-white px-4 rounded-xl font-bold hover:bg-purple-700 transition"
+                >
+                  Registrar
+                </button>
+              </div>
+
+              {mamadeiras.length > 0 && (
+                <div className="border-t border-slate-100 dark:border-slate-700 pt-3 space-y-1">
+                  <h3 className="text-xs font-semibold opacity-70 mb-1">Histórico de Mamadeiras:</h3>
+                  {mamadeiras.slice(0, 3).map((m) => (
+                    <div key={m.id} className="flex justify-between text-xs bg-slate-50 dark:bg-slate-700/40 p-2 rounded-lg">
+                      <span className="font-medium text-purple-600 dark:text-purple-300">{m.quantidade} ml</span>
+                      <span className="opacity-70">{m.hora}</span>
                     </div>
                   ))}
                 </div>
@@ -500,7 +518,7 @@ export default function MaeECuidadoApp() {
               )}
             </div>
 
-            {/* Calculadora de Sono */}
+            {/* Calculadora de Sono com 'Dormiu às' e 'Acordou às' */}
             <div className={`rounded-2xl p-5 shadow-sm border ${cardClasses}`}>
               <div className="flex items-center space-x-2 mb-3">
                 <Moon className="text-[#2D7A1E] w-5 h-5" />
@@ -510,7 +528,7 @@ export default function MaeECuidadoApp() {
               <div className="text-center py-4 bg-emerald-50/50 dark:bg-slate-700/40 rounded-xl mb-4 border border-emerald-100 dark:border-slate-600">
                 <span className="text-3xl font-mono font-bold text-[#2D7A1E] dark:text-emerald-400">{formatTime(tempoSono)}</span>
                 <p className="text-xs opacity-70 mt-1">
-                  {sonoTimer ? 'Soneca em andamento...' : 'Pronto para iniciar'}
+                  {sonoTimer ? `Dormiu às ${horaInicioSono}...` : 'Pronto para iniciar'}
                 </p>
               </div>
 
@@ -523,34 +541,39 @@ export default function MaeECuidadoApp() {
                 {sonoTimer ? 'Finalizar Soneca' : 'Iniciar Soneca'}
               </button>
 
-              {registrosSono.length > 0 && !sonoTimer && (
-                <div className="mt-3 p-2.5 bg-emerald-50 dark:bg-slate-700/30 rounded-xl border border-emerald-100 dark:border-slate-600 text-xs flex items-center gap-2">
-                  <Sparkles className="w-4 h-4 text-emerald-600 shrink-0" />
-                  <p className="text-[11px]">
-                    <span className="font-bold text-[#2D7A1E] dark:text-emerald-400">Próxima Janela: </span>
-                    Sugerida em aproximadamente 1h30 a 2h após acordar.
-                  </p>
+              {registrosSono.length > 0 && (
+                <div className="border-t border-slate-100 dark:border-slate-700 pt-3 mt-4 space-y-2">
+                  <h3 className="text-xs font-semibold opacity-70">Últimas Sonecas:</h3>
+                  {registrosSono.slice(0, 3).map((s) => (
+                    <div key={s.id} className="text-xs bg-slate-50 dark:bg-slate-700/40 p-2.5 rounded-lg flex justify-between items-center">
+                      <div>
+                        <p className="font-bold text-[#2D7A1E] dark:text-emerald-400">{s.duracao} min de sono</p>
+                        <p className="text-[10px] opacity-75">Dormiu às <span className="font-semibold">{s.dormiuAs}</span> e acordou às <span className="font-semibold">{s.acordouAs}</span></p>
+                      </div>
+                      <span className="text-[10px] opacity-50">{s.data}</span>
+                    </div>
+                  ))}
                 </div>
               )}
             </div>
           </div>
         )}
 
-        {/* --- ABA AUTOCUIDADO DA MÃE (NOVA!) --- */}
+        {/* --- ABA MÃE (AUTOCUIDADO + CARTÃO DE SAÚDE) --- */}
         {activeTab === 'autocuidado' && (
           <div className="space-y-6">
-            {/* Card Gotas de Afeto */}
-            <div className="rounded-2xl p-5 bg-gradient-to-br from-pink-500 to-rose-400 text-white shadow-md relative overflow-hidden">
+            {/* Card Gotas de Afeto - Rosa Suave (Igual aos quadros do seio) */}
+            <div className="rounded-2xl p-5 bg-[#FFF2F4] dark:bg-slate-800 border border-pink-100 dark:border-slate-700 shadow-sm relative overflow-hidden">
               <div className="flex items-center space-x-2 mb-2">
-                <Sparkles className="w-5 h-5 text-amber-200" />
-                <h2 className="font-bold text-sm">Gota de Afeto do Dia</h2>
+                <Sparkles className="w-5 h-5 text-[#F0657D]" />
+                <h2 className="font-bold text-sm text-[#F0657D] dark:text-pink-300">Gota de Afeto do Dia</h2>
               </div>
-              <p className="text-sm font-medium leading-relaxed italic my-3 bg-white/10 p-3.5 rounded-xl border border-white/20">
+              <p className="text-xs font-medium leading-relaxed italic my-3 bg-white/80 dark:bg-slate-700/60 p-3.5 rounded-xl border border-pink-100/60 dark:border-slate-600 text-slate-700 dark:text-slate-200">
                 "{gotasDeAfeto[indiceFrase]}"
               </p>
               <button 
                 onClick={proximaFraseAfeto}
-                className="w-full bg-white text-[#F0657D] py-2 rounded-xl text-xs font-bold hover:bg-pink-50 transition shadow-sm"
+                className="w-full bg-[#F0657D] text-white py-2 rounded-xl text-xs font-bold hover:bg-[#d9536a] transition shadow-sm"
               >
                 Nova Gota de Afeto 💖
               </button>
@@ -578,7 +601,6 @@ export default function MaeECuidadoApp() {
                   <button 
                     onClick={() => setCoposAgua(0)}
                     className="p-2.5 rounded-xl border border-slate-200 text-slate-400 text-xs"
-                    title="Zerar água do dia"
                   >
                     Zerar
                   </button>
@@ -600,7 +622,7 @@ export default function MaeECuidadoApp() {
                     onClick={() => setHumorHoje(humor)}
                     className={`p-2.5 rounded-xl border font-medium text-left transition ${
                       humorHoje === humor 
-                        ? 'bg-pink-50 border-[#F0657D] text-[#F0657D] dark:bg-slate-700' 
+                        ? 'bg-[#FFF2F4] border-[#F0657D] text-[#F0657D] dark:bg-slate-700' 
                         : 'border-slate-100 dark:border-slate-700'
                     }`}
                   >
@@ -609,7 +631,6 @@ export default function MaeECuidadoApp() {
                 ))}
               </div>
 
-              {/* Checkbox Vitamina */}
               <div className="pt-3 border-t border-slate-100 dark:border-slate-700 flex items-center justify-between text-xs">
                 <span className="font-semibold">Tomou as Vitaminas / Suplementos?</span>
                 <button
@@ -624,16 +645,82 @@ export default function MaeECuidadoApp() {
                 </button>
               </div>
             </div>
+
+            {/* Cartão de Saúde e Emergência (Acomodado suavemente na aba) */}
+            <div className={`p-4 rounded-2xl border flex flex-col gap-2.5 text-xs ${darkMode ? 'bg-slate-800 border-rose-900/40' : 'bg-rose-50/50 border-rose-100'}`}>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <ShieldAlert className="w-5 h-5 text-rose-500 shrink-0" />
+                  <span className="font-bold text-rose-600 dark:text-rose-400 text-sm">Cartão de Saúde & Emergência</span>
+                </div>
+                {userData.tipoSanguineo && (
+                  <span className="bg-rose-500 text-white font-bold px-2 py-0.5 rounded-md text-[10px]">
+                    Sangue: {userData.tipoSanguineo}
+                  </span>
+                )}
+              </div>
+
+              <div className="text-[11px] space-y-1 opacity-90 border-t border-rose-100 dark:border-slate-700 pt-2">
+                {userData.alergias && <p><span className="font-semibold text-rose-600 dark:text-rose-400">Alergias:</span> {userData.alergias}</p>}
+                {userData.convenio && <p><span className="font-semibold text-slate-700 dark:text-slate-300">Plano/SUS:</span> {userData.convenio}</p>}
+              </div>
+
+              <div className="flex gap-2 pt-2 border-t border-rose-100 dark:border-slate-700">
+                {userData.telefonePediatra && (
+                  <a 
+                    href={`tel:${userData.telefonePediatra}`} 
+                    className="flex-1 bg-emerald-600 text-white py-2 rounded-xl flex items-center justify-center gap-1 font-bold text-xs shadow-sm"
+                  >
+                    <Phone className="w-3.5 h-3.5" /> Ligar Pediatra
+                  </a>
+                )}
+                <a 
+                  href="tel:192" 
+                  className="flex-1 bg-rose-600 text-white py-2 rounded-xl flex items-center justify-center gap-1 font-bold text-xs shadow-sm"
+                >
+                  Ligar 192 (SAMU)
+                </a>
+              </div>
+            </div>
           </div>
         )}
 
-        {/* --- ABA ALIMENTAÇÃO --- */}
+        {/* --- ABA COMIDA (ALIMENTAÇÃO + DICAS DE CARDÁPIO) --- */}
         {activeTab === 'alimentacao' && (
           <div className="space-y-6">
+            {/* Dicas de Cardápio para Introdução Alimentar */}
+            <div className={`rounded-2xl p-5 shadow-sm border ${cardClasses}`}>
+              <div className="flex items-center space-x-2 mb-3">
+                <ChefHat className="text-amber-500 w-5 h-5" />
+                <h2 className="font-bold">Dicas de Cardápio (I.A)</h2>
+              </div>
+              <p className="text-xs opacity-75 mb-3">Monte o pratinho equilibrado combinando os grupos:</p>
+
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                <div className="bg-amber-50 dark:bg-slate-700/50 p-2.5 rounded-xl border border-amber-100 dark:border-slate-600">
+                  <span className="font-bold text-amber-700 dark:text-amber-300">🥔 Tubérculos</span>
+                  <p className="text-[10px] opacity-80 mt-0.5">Batata-doce, Mandioquinha, Inhame</p>
+                </div>
+                <div className="bg-emerald-50 dark:bg-slate-700/50 p-2.5 rounded-xl border border-emerald-100 dark:border-slate-600">
+                  <span className="font-bold text-emerald-700 dark:text-emerald-300">🥦 Legumes/Verduras</span>
+                  <p className="text-[10px] opacity-80 mt-0.5">Brócolis, Cenoura, Abobrinha</p>
+                </div>
+                <div className="bg-rose-50 dark:bg-slate-700/50 p-2.5 rounded-xl border border-rose-100 dark:border-slate-600">
+                  <span className="font-bold text-rose-700 dark:text-rose-300">🍗 Proteínas</span>
+                  <p className="text-[10px] opacity-80 mt-0.5">Frango desfiado, Carne moída, Ovo</p>
+                </div>
+                <div className="bg-purple-50 dark:bg-slate-700/50 p-2.5 rounded-xl border border-purple-100 dark:border-slate-600">
+                  <span className="font-bold text-purple-700 dark:text-purple-300">🍌 Frutas Lanches</span>
+                  <p className="text-[10px] opacity-80 mt-0.5">Banana amassada, Mamão, Abacate</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Registro de Introdução Alimentar */}
             <div className={`rounded-2xl p-5 shadow-sm border ${cardClasses}`}>
               <div className="flex items-center space-x-2 mb-3">
                 <Utensils className="text-[#F0657D] w-5 h-5" />
-                <h2 className="font-bold">Introdução Alimentar</h2>
+                <h2 className="font-bold">Registro de Provinhas</h2>
               </div>
               
               <div className="space-y-3 mb-4 text-xs">
@@ -727,7 +814,7 @@ export default function MaeECuidadoApp() {
             <p className="text-xs opacity-75">Sugestão de horários para a fase atual:</p>
             
             <div className="space-y-3 text-xs">
-              <div className="p-3 bg-pink-50/50 dark:bg-slate-700/40 rounded-xl border border-pink-100 dark:border-slate-600 flex justify-between items-center">
+              <div className="p-3 bg-[#FFF2F4] dark:bg-slate-700/40 rounded-xl border border-pink-100 dark:border-slate-600 flex justify-between items-center">
                 <div>
                   <span className="font-bold text-[#F0657D]">07:00</span>
                   <p className="font-medium">Acordar + Amamentação / Café</p>
@@ -739,7 +826,7 @@ export default function MaeECuidadoApp() {
                   <p className="font-medium">Soneca da Manhã</p>
                 </div>
               </div>
-              <div className="p-3 bg-pink-50/50 dark:bg-slate-700/40 rounded-xl border border-pink-100 dark:border-slate-600 flex justify-between items-center">
+              <div className="p-3 bg-[#FFF2F4] dark:bg-slate-700/40 rounded-xl border border-pink-100 dark:border-slate-600 flex justify-between items-center">
                 <div>
                   <span className="font-bold text-[#F0657D]">12:00</span>
                   <p className="font-medium">Almoço + Banho do Bebê</p>
@@ -795,7 +882,7 @@ export default function MaeECuidadoApp() {
         )}
       </main>
 
-      {/* Bottom Bar (Navegação com nova Aba Autocuidado) */}
+      {/* Bottom Bar */}
       <nav className={`fixed bottom-0 left-0 right-0 border-t p-2 flex justify-around items-center z-20 ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-pink-100'}`}>
         <button onClick={() => setActiveTab('inicio')} className={`flex flex-col items-center p-1.5 ${activeTab === 'inicio' ? 'text-[#F0657D]' : 'opacity-50'}`}>
           <Heart className="w-5 h-5" />
