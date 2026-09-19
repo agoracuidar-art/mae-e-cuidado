@@ -12,15 +12,14 @@ import {
   Apple,
   ShoppingCart,
   HeartPulse,
-  Bowl,
-  Pepper,
-  CircleCheck,
-  CircleXmark,
-  TriangleAlert,
+  Flame,
+  CheckCircle2,
+  XCircle,
+  AlertTriangle,
   RotateCcw,
   Plus,
-  Grimace,
-  TruckMedical,
+  Frown,
+  Ambulance,
   Sun,
   Moon,
   Zap,
@@ -213,7 +212,6 @@ export default function MaeECuidadoApp() {
   const [cutAge, setCutAge] = useState("6m");
   const [shoppingList, setShoppingList] = useState(initialShoppingList);
 
-  // Estados PWA
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [showInstallBanner, setShowInstallBanner] = useState(false);
   const [showInstallModal, setShowInstallModal] = useState(false);
@@ -275,11 +273,12 @@ export default function MaeECuidadoApp() {
     0
   );
 
-  const activeDayMeal = (menuData[currentWeek] || menuData[1])[currentDay] || menuData[1]["Segunda"];
+  const activeWeekData = menuData[currentWeek] || menuData[1];
+  const activeDayMeal = activeWeekData[currentDay] || activeWeekData["Segunda"] || menuData[1]["Segunda"];
 
   return (
     <div className="min-h-screen bg-[#fcf8f6] text-slate-700 font-sans pb-24">
-      {/* Banner PWA do Topo */}
+      {/* Banner PWA */}
       {showInstallBanner && (
         <div className="bg-gradient-to-r from-pink-400 to-rose-400 text-white px-4 py-3 shadow-md">
           <div className="max-w-4xl mx-auto flex items-center justify-between gap-3 text-sm">
@@ -302,7 +301,7 @@ export default function MaeECuidadoApp() {
         </div>
       )}
 
-      {/* Header Sticky com Botão de Instalar Pequeno */}
+      {/* Header Sticky */}
       <header className="bg-white border-b border-pink-100 sticky top-0 z-30 shadow-sm">
         <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
@@ -414,118 +413,122 @@ export default function MaeECuidadoApp() {
             {/* Exibição das Refeições */}
             <div className="space-y-6">
               {/* Almoço */}
-              <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100">
-                <div className="flex items-center justify-between gap-2 mb-4 border-b border-slate-100 pb-3">
-                  <div className="flex items-center gap-2">
-                    <div className="w-10 h-10 rounded-2xl bg-amber-100 text-amber-700 flex items-center justify-center text-lg font-bold">
-                      <Sun size={20} />
+              {activeDayMeal?.almoco && (
+                <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100">
+                  <div className="flex items-center justify-between gap-2 mb-4 border-b border-slate-100 pb-3">
+                    <div className="flex items-center gap-2">
+                      <div className="w-10 h-10 rounded-2xl bg-amber-100 text-amber-700 flex items-center justify-center text-lg font-bold">
+                        <Sun size={20} />
+                      </div>
+                      <div>
+                        <h3 className="font-extrabold text-slate-800 text-lg">Almoço</h3>
+                        <span className="text-xs text-slate-400 font-medium">
+                          {currentDay} - Semana {currentWeek}
+                        </span>
+                      </div>
                     </div>
-                    <div>
-                      <h3 className="font-extrabold text-slate-800 text-lg">Almoço</h3>
-                      <span className="text-xs text-slate-400 font-medium">
-                        {currentDay} - Semana {currentWeek}
+                    {activeDayMeal.almoco.ferro && (
+                      <span className="bg-rose-100 text-rose-800 text-[10px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1">
+                        <Zap size={10} /> Rico em Ferro
                       </span>
+                    )}
+                  </div>
+
+                  <div className="bg-slate-50 p-4 rounded-2xl mb-4 border border-slate-100">
+                    <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block mb-1">
+                      Base da Família (Sem Sal)
+                    </span>
+                    <p className="text-sm font-bold text-slate-800">{activeDayMeal.almoco.base}</p>
+                  </div>
+
+                  <div className="space-y-3">
+                    <div className="p-3.5 rounded-2xl bg-pink-50/60 border border-pink-100">
+                      <span className="text-xs font-extrabold text-pink-700 block mb-0.5 flex items-center gap-1">
+                        <Baby size={12} /> Adaptação 6 a 8 Meses:
+                      </span>
+                      <p className="text-xs text-slate-700 leading-relaxed">{activeDayMeal.almoco.baby6m}</p>
+                    </div>
+                    <div className="p-3.5 rounded-2xl bg-emerald-50/60 border border-emerald-100">
+                      <span className="text-xs font-extrabold text-emerald-700 block mb-0.5 flex items-center gap-1">
+                        <Smile size={12} /> Adaptação 9 a 11 Meses:
+                      </span>
+                      <p className="text-xs text-slate-700 leading-relaxed">{activeDayMeal.almoco.baby9m}</p>
+                    </div>
+                    <div className="p-3.5 rounded-2xl bg-indigo-50/60 border border-indigo-100">
+                      <span className="text-xs font-extrabold text-indigo-700 block mb-0.5 flex items-center gap-1">
+                        <Users size={12} /> Adaptação 12+ Meses:
+                      </span>
+                      <p className="text-xs text-slate-700 leading-relaxed">{activeDayMeal.almoco.baby12m}</p>
                     </div>
                   </div>
-                  {activeDayMeal.almoco.ferro && (
-                    <span className="bg-rose-100 text-rose-800 text-[10px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1">
-                      <Zap size={10} /> Rico em Ferro
-                    </span>
-                  )}
-                </div>
 
-                <div className="bg-slate-50 p-4 rounded-2xl mb-4 border border-slate-100">
-                  <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block mb-1">
-                    Base da Família (Sem Sal)
-                  </span>
-                  <p class="text-sm font-bold text-slate-800">{activeDayMeal.almoco.base}</p>
-                </div>
-
-                <div className="space-y-3">
-                  <div className="p-3.5 rounded-2xl bg-pink-50/60 border border-pink-100">
-                    <span className="text-xs font-extrabold text-pink-700 block mb-0.5 flex items-center gap-1">
-                      <Baby size={12} /> Adaptação 6 a 8 Meses:
+                  <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-600">
+                    <span className="font-bold flex items-center gap-1.5">
+                      <Citrus size={14} className="text-amber-500" /> Ativador Vitamina C:
                     </span>
-                    <p className="text-xs text-slate-700 leading-relaxed">{activeDayMeal.almoco.baby6m}</p>
-                  </div>
-                  <div className="p-3.5 rounded-2xl bg-emerald-50/60 border border-emerald-100">
-                    <span className="text-xs font-extrabold text-emerald-700 block mb-0.5 flex items-center gap-1">
-                      <Smile size={12} /> Adaptação 9 a 11 Meses:
-                    </span>
-                    <p className="text-xs text-slate-700 leading-relaxed">{activeDayMeal.almoco.baby9m}</p>
-                  </div>
-                  <div className="p-3.5 rounded-2xl bg-indigo-50/60 border border-indigo-100">
-                    <span className="text-xs font-extrabold text-indigo-700 block mb-0.5 flex items-center gap-1">
-                      <Users size={12} /> Adaptação 12+ Meses:
-                    </span>
-                    <p className="text-xs text-slate-700 leading-relaxed">{activeDayMeal.almoco.baby12m}</p>
+                    <span className="font-semibold text-slate-800">{activeDayMeal.almoco.vitc}</span>
                   </div>
                 </div>
-
-                <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-600">
-                  <span className="font-bold flex items-center gap-1.5">
-                    <Citrus size={14} className="text-amber-500" /> Ativador Vitamina C:
-                  </span>
-                  <span className="font-semibold text-slate-800">{activeDayMeal.almoco.vitc}</span>
-                </div>
-              </div>
+              )}
 
               {/* Jantar */}
-              <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100">
-                <div className="flex items-center justify-between gap-2 mb-4 border-b border-slate-100 pb-3">
-                  <div className="flex items-center gap-2">
-                    <div className="w-10 h-10 rounded-2xl bg-indigo-100 text-indigo-700 flex items-center justify-center text-lg font-bold">
-                      <Moon size={20} />
+              {activeDayMeal?.jantar && (
+                <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100">
+                  <div className="flex items-center justify-between gap-2 mb-4 border-b border-slate-100 pb-3">
+                    <div className="flex items-center gap-2">
+                      <div className="w-10 h-10 rounded-2xl bg-indigo-100 text-indigo-700 flex items-center justify-center text-lg font-bold">
+                        <Moon size={20} />
+                      </div>
+                      <div>
+                        <h3 className="font-extrabold text-slate-800 text-lg">Jantar</h3>
+                        <span className="text-xs text-slate-400 font-medium">
+                          {currentDay} - Semana {currentWeek}
+                        </span>
+                      </div>
                     </div>
-                    <div>
-                      <h3 className="font-extrabold text-slate-800 text-lg">Jantar</h3>
-                      <span className="text-xs text-slate-400 font-medium">
-                        {currentDay} - Semana {currentWeek}
+                    {activeDayMeal.jantar.ferro && (
+                      <span className="bg-rose-100 text-rose-800 text-[10px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1">
+                        <Zap size={10} /> Rico em Ferro
                       </span>
+                    )}
+                  </div>
+
+                  <div className="bg-slate-50 p-4 rounded-2xl mb-4 border border-slate-100">
+                    <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block mb-1">
+                      Base da Família (Sem Sal)
+                    </span>
+                    <p className="text-sm font-bold text-slate-800">{activeDayMeal.jantar.base}</p>
+                  </div>
+
+                  <div className="space-y-3">
+                    <div className="p-3.5 rounded-2xl bg-pink-50/60 border border-pink-100">
+                      <span className="text-xs font-extrabold text-pink-700 block mb-0.5 flex items-center gap-1">
+                        <Baby size={12} /> Adaptação 6 a 8 Meses:
+                      </span>
+                      <p className="text-xs text-slate-700 leading-relaxed">{activeDayMeal.jantar.baby6m}</p>
+                    </div>
+                    <div className="p-3.5 rounded-2xl bg-emerald-50/60 border border-emerald-100">
+                      <span className="text-xs font-extrabold text-emerald-700 block mb-0.5 flex items-center gap-1">
+                        <Smile size={12} /> Adaptação 9 a 11 Meses:
+                      </span>
+                      <p className="text-xs text-slate-700 leading-relaxed">{activeDayMeal.jantar.baby9m}</p>
+                    </div>
+                    <div className="p-3.5 rounded-2xl bg-indigo-50/60 border border-indigo-100">
+                      <span className="text-xs font-extrabold text-indigo-700 block mb-0.5 flex items-center gap-1">
+                        <Users size={12} /> Adaptação 12+ Meses:
+                      </span>
+                      <p className="text-xs text-slate-700 leading-relaxed">{activeDayMeal.jantar.baby12m}</p>
                     </div>
                   </div>
-                  {activeDayMeal.jantar.ferro && (
-                    <span className="bg-rose-100 text-rose-800 text-[10px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1">
-                      <Zap size={10} /> Rico em Ferro
-                    </span>
-                  )}
-                </div>
 
-                <div className="bg-slate-50 p-4 rounded-2xl mb-4 border border-slate-100">
-                  <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block mb-1">
-                    Base da Família (Sem Sal)
-                  </span>
-                  <p className="text-sm font-bold text-slate-800">{activeDayMeal.jantar.base}</p>
-                </div>
-
-                <div className="space-y-3">
-                  <div className="p-3.5 rounded-2xl bg-pink-50/60 border border-pink-100">
-                    <span className="text-xs font-extrabold text-pink-700 block mb-0.5 flex items-center gap-1">
-                      <Baby size={12} /> Adaptação 6 a 8 Meses:
+                  <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-600">
+                    <span className="font-bold flex items-center gap-1.5">
+                      <Citrus size={14} className="text-amber-500" /> Sobremesa Vitamina C:
                     </span>
-                    <p className="text-xs text-slate-700 leading-relaxed">{activeDayMeal.jantar.baby6m}</p>
-                  </div>
-                  <div className="p-3.5 rounded-2xl bg-emerald-50/60 border border-emerald-100">
-                    <span className="text-xs font-extrabold text-emerald-700 block mb-0.5 flex items-center gap-1">
-                      <Smile size={12} /> Adaptação 9 a 11 Meses:
-                    </span>
-                    <p className="text-xs text-slate-700 leading-relaxed">{activeDayMeal.jantar.baby9m}</p>
-                  </div>
-                  <div className="p-3.5 rounded-2xl bg-indigo-50/60 border border-indigo-100">
-                    <span className="text-xs font-extrabold text-indigo-700 block mb-0.5 flex items-center gap-1">
-                      <Users size={12} /> Adaptação 12+ Meses:
-                    </span>
-                    <p className="text-xs text-slate-700 leading-relaxed">{activeDayMeal.jantar.baby12m}</p>
+                    <span className="font-semibold text-slate-800">{activeDayMeal.jantar.vitc}</span>
                   </div>
                 </div>
-
-                <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-600">
-                  <span className="font-bold flex items-center gap-1.5">
-                    <Citrus size={14} className="text-amber-500" /> Sobremesa Vitamina C:
-                  </span>
-                  <span className="font-semibold text-slate-800">{activeDayMeal.jantar.vitc}</span>
-                </div>
-              </div>
+              )}
             </div>
           </section>
         )}
@@ -577,12 +580,12 @@ export default function MaeECuidadoApp() {
 
             <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
               <h3 className="font-extrabold text-slate-800 text-lg mb-4 flex items-center gap-2">
-                <Pepper size={18} className="text-pink-500" /> Guia de Temperos na Introdução Alimentar
+                <Flame size={18} className="text-pink-500" /> Guia de Temperos na Introdução Alimentar
               </h3>
               <div className="grid md:grid-cols-2 gap-6">
                 <div className="bg-emerald-50 rounded-xl p-4 border border-emerald-200">
                   <h4 className="font-bold text-emerald-800 text-sm mb-3 flex items-center gap-2">
-                    <CircleCheck size={16} className="text-emerald-600" /> PERMITIDOS E RECOMENDADOS (Liberados)
+                    <CheckCircle2 size={16} className="text-emerald-600" /> PERMITIDOS E RECOMENDADOS (Liberados)
                   </h4>
                   <ul className="text-xs text-slate-700 space-y-2">
                     <li><strong>Aromáticos:</strong> Alho, cebola, cebolinha, salsinha, alho-poró.</li>
@@ -593,7 +596,7 @@ export default function MaeECuidadoApp() {
                 </div>
                 <div className="bg-rose-50 rounded-xl p-4 border border-rose-200">
                   <h4 className="font-bold text-rose-800 text-sm mb-3 flex items-center gap-2">
-                    <CircleXmark size={16} className="text-rose-600" /> PROIBIDOS / EVITAR
+                    <XCircle size={16} className="text-rose-600" /> PROIBIDOS / EVITAR
                   </h4>
                   <ul className="text-xs text-slate-700 space-y-2">
                     <li><strong>Sal Adicionado:</strong> Proibido até 1 ano (sobrecarrega os rins).</li>
@@ -643,7 +646,7 @@ export default function MaeECuidadoApp() {
             </div>
 
             <div className="grid sm:grid-cols-2 gap-4">
-              {cutsData[cutAge].map((item, idx) => (
+              {(cutsData[cutAge] || cutsData["6m"]).map((item, idx) => (
                 <div key={idx} className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex items-start gap-4">
                   <div className="w-12 h-12 rounded-2xl bg-amber-100 text-amber-700 flex items-center justify-center text-xl shrink-0 font-bold">
                     <Apple size={22} />
@@ -740,7 +743,7 @@ export default function MaeECuidadoApp() {
               <div className="bg-amber-50 rounded-2xl p-6 border-2 border-amber-300 shadow-sm">
                 <div className="flex items-center gap-3 mb-4">
                   <div className="w-12 h-12 rounded-2xl bg-amber-500 text-white flex items-center justify-center text-xl font-black">
-                    <Grimace size={24} />
+                    <Frown size={24} />
                   </div>
                   <div>
                     <h3 className="font-extrabold text-amber-900 text-lg">REFLEXO DE GAG (Normal)</h3>
@@ -759,7 +762,7 @@ export default function MaeECuidadoApp() {
               <div className="bg-rose-50 rounded-2xl p-6 border-2 border-rose-400 shadow-sm">
                 <div className="flex items-center gap-3 mb-4">
                   <div className="w-12 h-12 rounded-2xl bg-rose-600 text-white flex items-center justify-center text-xl font-black animate-pulse">
-                    <TriangleAlert size={24} />
+                    <AlertTriangle size={24} />
                   </div>
                   <div>
                     <h3 className="font-extrabold text-rose-900 text-lg">ENGASGO (Emergência)</h3>
@@ -778,7 +781,7 @@ export default function MaeECuidadoApp() {
             {/* Passo a Passo */}
             <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
               <h3 className="font-extrabold text-slate-800 text-base mb-4 flex items-center gap-2">
-                <TruckMedical size={18} className="text-rose-600" /> Passo a Passo da Manobra em Bebês (Menores de 1 Ano)
+                <Ambulance size={18} className="text-rose-600" /> Passo a Passo da Manobra em Bebês (Menores de 1 Ano)
               </h3>
               <div className="grid sm:grid-cols-3 gap-4 text-xs">
                 <div className="p-4 rounded-xl bg-slate-50 border border-slate-200">
