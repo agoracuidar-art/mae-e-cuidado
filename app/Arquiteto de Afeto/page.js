@@ -44,7 +44,7 @@ const CNV_CASAL_BANCO = [
   { id: 2, cenario: 'Choro do Bebê de Madrugada', erro: 'Você finge que tá dormindo só para não levantar e pegar o bebê!', cnv: 'Acordei 3 vezes nesta noite e estou no meu limite físico. Você pode levantar desta vez para eu recuperar um pouco de energia?' },
   { id: 3, cenario: 'Discordância sobre Limites dos Filhos', erro: 'Você mima demais essa criança, estraga tudo o que eu tento educar!', cnv: 'Fico inseguro(a) quando mudamos as regras na frente dele(a). Vamos alinhar como vamos agir na próxima vez para mantermos a mesma postura?' },
   { id: 4, cenario: 'Uso de Celular no Tempo em Família', erro: 'Você não sai desse celular, prefere as redes sociais do que a sua família!', cnv: 'Sinto falta da sua atenção quando estamos à mesa. Podemos deixar os celulares em outro cômodo durante o jantar para conversarmos?' },
-  { id: 5, cenario: 'Falta de Tempo para o Casal', erro: 'Nós viramos dois estranhos morando na mesma casa, você não se importa mais.', cnv: 'Sinto saudade dos nossos momentos a sós. Que tal pedirmos ajuda para a vovó/babá neste sábado para sairmos por 2 horas?' },
+  { id: 5, cenario: 'Falta de Tempo para O Casal', erro: 'Nós viramos dois estranhos morando na mesma casa, você não se importa mais.', cnv: 'Sinto saudade dos nossos momentos a sós. Que tal pedirmos ajuda para a vovó/babá neste sábado para sairmos por 2 horas?' },
   { id: 6, cenario: 'Estresse Financeiro da Casa', erro: 'Você gasta dinheiro com besteira enquanto as contas da casa só acumulam!', cnv: 'Estou preocupado(a) com os nossos gastos deste mês. Podemos sentar hoje à noite para rever o orçamento juntos sem cobranças?' },
   { id: 7, cenario: 'Tom de Voz Ríspido na Frente dos Filhos', erro: 'Você é um grosso(a), não sabe nem falar com as pessoas!', cnv: 'Fiquei desconfortável com a forma como você falou comigo perto dos nossos filhos. Vamos conversar sobre isso em particular quando as crianças dormirem?' },
   { id: 8, cenario: 'Falta de Iniciativa para Tarefas do Bebê', erro: 'Tenho que desenhar tudo o que você precisa fazer, parece mais um filho!', cnv: 'Fico sobrecarregado(a) quando preciso gerenciar e planejar todas as tarefas do bebê. Gostaria que você assumisse totalmente a rotina do banho e da mochila.' },
@@ -63,10 +63,18 @@ export default function App() {
   const [pwaInstalado, setPwaInstalado] = useState(false);
   const [humorAtual, setHumorAtual] = useState('🟢');
   const [accordionAberto, setAccordionAberto] = useState(null);
-  const [tijolosEnviadosCount, setTijolosEnviadosCount] = useState(6); // Simulação do Muro
+  const [tijolosEnviadosCount, setTijolosEnviadosCount] = useState(6);
   const [filtroTijolo, setFiltroTijolo] = useState('Todos');
 
   useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const humorSalvo = localStorage.getItem('arquiteto_humor');
+      if (humorSalvo) setHumorAtual(humorSalvo);
+
+      const countSalvo = localStorage.getItem('arquiteto_tijolos_count');
+      if (countSalvo) setTijolosEnviadosCount(parseInt(countSalvo, 10));
+    }
+
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('/sw.js').catch((err) => console.log(err));
     }
@@ -89,9 +97,37 @@ export default function App() {
     if (outcome === 'accepted') setPromptInstalacao(null);
   };
 
-  const enviarTijolinho = () => {
-    setTijolosEnviadosCount(prev => prev + 1);
-    alert('Tijolinho enviado! O muro de afeto da família ganhou um novo tijolo.');
+  const mudarHumor = (novoHumor) => {
+    setHumorAtual(novoHumor);
+    localStorage.setItem('arquiteto_humor', novoHumor);
+  };
+
+  // Função para enviar Tijolinho diretamente pelo WhatsApp
+  const enviarTijolinho = (tijolo) => {
+    const novoCount = tijolosEnviadosCount + 1;
+    setTijolosEnviadosCount(novoCount);
+    localStorage.setItem('arquiteto_tijolos_count', novoCount.toString());
+
+    const texto = encodeURIComponent(
+      `🧱 *Tijolinho de Afeto (${tijolo.cat})*\n\n"${tijolo.texto}"\n\n_Enviado pelo App Arquiteto de Afeto_ ❤️`
+    );
+    window.open(`https://api.whatsapp.com/send?text=${texto}`, '_blank');
+  };
+
+  // Função para enviar o Alerta SOS no WhatsApp
+  const dispararSosWhatsApp = () => {
+    const texto = encodeURIComponent(
+      `🚨 *ALERTA SOS - ARQUITETO DE AFETO*\n\nMinha bateria emocional acabou e estou no meu limite físico e mental agora.\nPreciso que você assuma a rotina e me dê um tempo de pausa sem perguntas! 🪫❤️`
+    );
+    window.open(`https://api.whatsapp.com/send?text=${texto}`, '_blank');
+  };
+
+  // Função para compartilhar frase de CNV no WhatsApp
+  const compartilharCnvWhatsApp = (cenario, cnvTexto) => {
+    const texto = encodeURIComponent(
+      `💬 *Comunicação Não Violenta - ${cenario}*\n\n*Como podemos falar:* "${cnvTexto}"\n\n_Dica do App Arquiteto de Afeto_ ✨`
+    );
+    window.open(`https://api.whatsapp.com/send?text=${texto}`, '_blank');
   };
 
   const tijolosFiltrados = filtroTijolo === 'Todos' 
@@ -108,7 +144,7 @@ export default function App() {
         borderBottom: '1px solid #F0E6DF',
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'space-between',
+        justify: 'space-between',
         position: 'sticky',
         top: 0,
         zIndex: 100
@@ -177,7 +213,7 @@ export default function App() {
                   return (
                     <button
                       key={emoji}
-                      onClick={() => setHumorAtual(emoji)}
+                      onClick={() => mudarHumor(emoji)}
                       style={{
                         flex: 1,
                         padding: '10px 4px',
@@ -250,8 +286,11 @@ export default function App() {
                     {item.cat}
                   </span>
                   <p style={{ margin: '6px 0 10px 0', fontSize: '13px', color: '#4A5568' }}>"{item.texto}"</p>
-                  <button onClick={enviarTijolinho} style={{ backgroundColor: '#E88D94', color: '#FFF', border: 'none', borderRadius: '8px', padding: '6px 12px', fontSize: '11px', fontWeight: 600, cursor: 'pointer' }}>
-                    Enviar para a Família
+                  <button 
+                    onClick={() => enviarTijolinho(item)} 
+                    style={{ backgroundColor: '#25D366', color: '#FFF', border: 'none', borderRadius: '8px', padding: '8px 12px', fontSize: '11px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
+                  >
+                    📲 Enviar via WhatsApp
                   </button>
                 </div>
               ))}
@@ -265,10 +304,10 @@ export default function App() {
             <div style={{ backgroundColor: '#FFF0F0', padding: '20px', borderRadius: '20px', border: '1px solid #F8B4B4', textAlign: 'center' }}>
               <h2 style={{ color: '#C53030', margin: '0 0 10px 0', fontSize: '20px' }}>🔋 Bateria Acabou</h2>
               <p style={{ fontSize: '13px', color: '#742A2A', margin: '0 0 20px 0' }}>
-                Aperte o botão para notificar os adultos do ID_Familia que você precisa de pausa e suporte imediato sem precisar falar.
+                Aperte o botão para notificar os adultos no WhatsApp de que você precisa de pausa e suporte imediato sem precisar falar.
               </p>
               <button
-                onClick={() => alert('Alerta de SOS de alta prioridade enviado para os outros adultos!')}
+                onClick={dispararSosWhatsApp}
                 style={{
                   width: '120px',
                   height: '120px',
@@ -280,16 +319,21 @@ export default function App() {
                   fontWeight: 700,
                   boxShadow: '0 8px 20px rgba(229, 62, 62, 0.4)',
                   cursor: 'pointer',
-                  margin: '0 auto'
+                  margin: '0 auto',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexDirection: 'column'
                 }}
               >
-                SOS
+                <span>⚡ SOS</span>
+                <span style={{ fontSize: '10px', fontWeight: 400 }}>WhatsApp</span>
               </button>
             </div>
 
             <div style={{ marginTop: '20px', backgroundColor: '#FFF', padding: '16px', borderRadius: '16px', border: '1px solid #F0E6DF' }}>
               <h4 style={{ margin: '0 0 8px 0', fontSize: '14px' }}>📋 Plano de Ação dos 3 Minutos:</h4>
-              <p style={{ fontSize: '12px', color: '#666', margin: 0 }}>
+              <p style={{ fontSize: '12px', color: '#666', margin: 0, lineHeight: '1.6' }}>
                 1. Assuma a rotina da criança imediatamente.<br/>
                 2. Entregue um copo d'água sem fazer perguntas de decisão.<br/>
                 3. Garanta 15 minutos de silêncio para a pessoa recarregar.
@@ -311,7 +355,13 @@ export default function App() {
                 {accordionAberto === item.id && (
                   <div style={{ padding: '14px', fontSize: '12px' }}>
                     <p style={{ color: '#C53030', margin: '0 0 8px 0' }}>❌ <strong>Antes:</strong> {item.erro}</p>
-                    <p style={{ color: '#2F855A', margin: 0 }}>✅ <strong>Como Falar Agora:</strong> {item.cnv}</p>
+                    <p style={{ color: '#2F855A', margin: '0 0 12px 0' }}>✅ <strong>Como Falar Agora:</strong> {item.cnv}</p>
+                    <button 
+                      onClick={() => compartilharCnvWhatsApp(item.cenario, item.cnv)}
+                      style={{ backgroundColor: '#EAF5ED', color: '#25D366', border: '1px solid #C2E7CB', padding: '6px 10px', borderRadius: '8px', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
+                    >
+                      📲 Enviar Frase no WhatsApp
+                    </button>
                   </div>
                 )}
               </div>
@@ -332,7 +382,13 @@ export default function App() {
                 {accordionAberto === `casal_${item.id}` && (
                   <div style={{ padding: '14px', fontSize: '12px' }}>
                     <p style={{ color: '#C53030', margin: '0 0 8px 0' }}>❌ <strong>Abordagem com Ruído:</strong> {item.erro}</p>
-                    <p style={{ color: '#2F855A', margin: 0 }}>✅ <strong>Alinhamento com CNV:</strong> {item.cnv}</p>
+                    <p style={{ color: '#2F855A', margin: '0 0 12px 0' }}>✅ <strong>Alinhamento com CNV:</strong> {item.cnv}</p>
+                    <button 
+                      onClick={() => compartilharCnvWhatsApp(item.cenario, item.cnv)}
+                      style={{ backgroundColor: '#EAF5ED', color: '#25D366', border: '1px solid #C2E7CB', padding: '6px 10px', borderRadius: '8px', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
+                    >
+                      📲 Enviar Frase no WhatsApp
+                    </button>
                   </div>
                 )}
               </div>
@@ -353,7 +409,7 @@ export default function App() {
         backgroundColor: '#FFFFFF',
         borderTop: '1px solid #F0E6DF',
         display: 'flex',
-        justifyContent: 'space-around',
+        justify: 'space-around',
         padding: '8px 0',
         zIndex: 100
       }}>
