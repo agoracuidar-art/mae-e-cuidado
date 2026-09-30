@@ -144,7 +144,7 @@ export default function App() {
         borderBottom: '1px solid #F0E6DF',
         display: 'flex',
         alignItems: 'center',
-        justify: 'space-between',
+        justifyContent: 'space-between',
         position: 'sticky',
         top: 0,
         zIndex: 100
@@ -398,7 +398,7 @@ export default function App() {
 
       </main>
 
-      {/* Menu Inferior Fixo de 5 Abas */}
+      {/* Menu Inferior Fixo de 5 Abas (Corrigido para 100% de largura distribuída) */}
       <nav style={{
         position: 'fixed',
         bottom: 0,
@@ -409,7 +409,7 @@ export default function App() {
         backgroundColor: '#FFFFFF',
         borderTop: '1px solid #F0E6DF',
         display: 'flex',
-        justify: 'space-around',
+        justifyContent: 'space-around',
         padding: '8px 0',
         zIndex: 100
       }}>
@@ -432,7 +432,8 @@ export default function App() {
               fontSize: '10px',
               fontWeight: abaAtiva === aba.id ? 700 : 500,
               color: abaAtiva === aba.id ? '#E88D94' : '#A0AEC0',
-              cursor: 'pointer'
+              cursor: 'pointer',
+              flex: 1
             }}
           >
             <span style={{ fontSize: '18px' }}>{aba.icon}</span>
